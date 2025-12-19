@@ -15,4 +15,4 @@ so you don't have to reconfigure them every time you play.
 - Architectury API
 
 ## License
-MIT
+This project is licensed under the MIT License. See the LICENSE file for details.
