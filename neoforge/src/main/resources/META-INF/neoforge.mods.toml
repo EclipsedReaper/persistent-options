@@ -1,7 +1,7 @@
 modLoader = "javafml"
 loaderVersion = "[1,)"
 license = "CC0-1.0"
-issueTrackerURL = "https://github.com/.../persistent-options/issues"
+issueTrackerURL = "https://github.com/EclipsedReaper/persistent-options/issues"
 
 [[mods]]
 modId = "persistent_options"
@@ -11,10 +11,13 @@ author = "EclipsedReaper"
 description = "Keeps your options in a global folder so you don't have to change them every time"
 logoFile = "assets/persistent_options/icon.png"
 
+[[mixins]]
+config = "persistent_options.mixins.json"
+
 [[dependencies.persistent_options]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.20.4, 1.22)"
+versionRange = "[1.20.4,)"
 ordering = "NONE"
 side = "BOTH"
 

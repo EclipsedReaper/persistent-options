@@ -3,64 +3,48 @@ package com.eclipse.persistent.util;
 import com.eclipse.persistent.PersistentOptions;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.*;
 
 public class OptionMerger {
 
-    public static boolean mergeIntersection(Path source, Path target) {
+    public static Map<String, String> loadOptions(Path path) {
+        Map<String, String> map = new LinkedHashMap<>();
+        if (!Files.exists(path)) return map;
+
         try {
-            if (!Files.exists(source) || !Files.exists(target)) return false;
-
-            List<String> sourceLines = Files.readAllLines(source);
-            List<String> targetLines = Files.readAllLines(target);
-
-            Map<String, String> sourceMap = new HashMap<>();
-            for (String line : sourceLines) {
+            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+            for (String line : lines) {
                 String[] parts = line.split(":", 2);
                 if (parts.length == 2) {
-                    sourceMap.put(parts[0], parts[1]);
+                    map.put(parts[0], line);
                 }
             }
-
-            if (sourceMap.isEmpty()) return false;
-
-            boolean changed = false;
-            List<String> newTargetLines = new ArrayList<>();
-
-            for (String line : targetLines) {
-                String[] parts = line.split(":", 2);
-
-                if (parts.length == 2) {
-                    String key = parts[0];
-                    if (sourceMap.containsKey(key)) {
-                        String newValue = sourceMap.get(key);
-                        String oldValue = parts[1];
-
-                        if (!newValue.equals(oldValue)) {
-                            newTargetLines.add(key + ":" + newValue);
-                            changed = true;
-                        } else {
-                            newTargetLines.add(line);
-                        }
-                    } else {
-                        newTargetLines.add(line);
-                    }
-                } else {
-                    newTargetLines.add(line);
-                }
-            }
-
-            if (changed) {
-                Files.write(target, newTargetLines);
-                PersistentOptions.LOGGER.info("Updated shared settings from newer configuration.");
-                return true;
-            }
-
         } catch (IOException e) {
-            PersistentOptions.LOGGER.error("Failed to merge options", e);
+            PersistentOptions.LOGGER.error("Failed to load settings: ", e);
         }
-        return false;
+        return map;
+    }
+
+    public static void smartMerge(Path source, Path target) {
+        Path backup = null;
+        try {
+            if (Files.exists(target)) {
+                backup = target.resolveSibling(target.getFileName() + ".bak");
+                Files.copy(target, backup, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            Map<String, String> sourceMap = loadOptions(source);
+            Map<String, String> targetMap = loadOptions(target);
+            targetMap.putAll(sourceMap);
+            Files.write(target, targetMap.values(), StandardCharsets.UTF_8);
+
+            if (backup != null) {
+                Files.deleteIfExists(backup);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

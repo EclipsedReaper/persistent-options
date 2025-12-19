@@ -3,7 +3,6 @@ package com.eclipse.persistent.mixin;
 import com.eclipse.persistent.PersistentOptions;
 import com.eclipse.persistent.ui.SyncDialog;
 import com.eclipse.persistent.util.OptionMerger;
-import dev.architectury.platform.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,139 +10,78 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.FileTime;
-import java.util.Comparator;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Mixin(Minecraft.class)
 public class OptionsLoadMixin {
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/Options"))
     private Options redirectOptions(Minecraft minecraft, File gameDir) {
-
-        String currentVersion = Platform.getMinecraftVersion();
-        Path versionedFolder = PersistentOptions.customOptionsFolder.resolve(currentVersion);
-        Path globalOptions = versionedFolder.resolve("options.txt");
-        Path localOptions = gameDir.toPath().resolve("options.txt");
+        Path globalFile = PersistentOptions.customOptionsFolder.resolve("options.txt");
+        Path localFile = gameDir.toPath().resolve("options.txt");
+        Path syncMarker = gameDir.toPath().resolve(".persistent_synced");
 
         try {
-            Files.createDirectories(versionedFolder);
-            boolean localIsReal = isRealUserOptions(localOptions);
+            Files.createDirectories(PersistentOptions.customOptionsFolder);
+            boolean globalExists = Files.exists(globalFile);
+            boolean localExists = Files.exists(localFile);
 
-            if (localIsReal) {
-                if (Files.exists(globalOptions)) {
-                    System.setProperty("java.awt.headless", "false");
-
-                    if (SyncDialog.showConflictDialog()) {
-                        importSettings(localOptions, globalOptions);
+            if (globalExists && localExists) {
+                if (Files.exists(syncMarker)) {
+                    OptionMerger.smartMerge(globalFile, localFile);
+                    PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.AUTO_SYNCED;
+                } else {
+                    if (isRealUserOptions(localFile)) {
+                        System.setProperty("java.awt.headless", "false");
+                        boolean keepLocal = SyncDialog.showConflictDialog();
+                        if (keepLocal) {
+                            OptionMerger.smartMerge(localFile, globalFile);
+                            PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.IMPORTED_LOCAL;
+                        } else {
+                            OptionMerger.smartMerge(globalFile, localFile);
+                            PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.APPLIED_GLOBAL;
+                        }
+                        createSyncMarker(syncMarker);
                     } else {
-                        markLocalAsProcessed(localOptions);
+                        OptionMerger.smartMerge(globalFile, localFile);
+                        PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.APPLIED_GLOBAL;
+                        createSyncMarker(syncMarker);
                     }
                 }
-                else {
-                    PersistentOptions.LOGGER.info("No global options for " + currentVersion + ". Importing local instance options.");
-                    importSettings(localOptions, globalOptions);
-                }
+            } else if (globalExists) {
+                Files.copy(globalFile, localFile);
+                PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.APPLIED_GLOBAL;
+                createSyncMarker(syncMarker);
+            } else {
+                Files.createFile(globalFile);
+                PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.INITIALIZED;
+                createSyncMarker(syncMarker);
             }
-            else {
-                if (Files.exists(globalOptions)) {
-                    checkForNewerConfigAndSync(versionedFolder, globalOptions);
-                }
-                else {
-                    attemptUpgradeFromOlderVersion(versionedFolder, globalOptions);
-                }
-            }
-
         } catch (Exception e) {
-            PersistentOptions.LOGGER.error("Error handling options synchronization: ", e);
+            PersistentOptions.LOGGER.error("Error handling options syncing: ", e);
+            PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.FAILED;
         }
-        return new Options(minecraft, versionedFolder.toFile());
+        return new Options(minecraft, gameDir);
     }
 
-    private void importSettings(Path source, Path target) throws IOException {
-        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-        markLocalAsProcessed(source);
-    }
-
-    private void markLocalAsProcessed(Path source) {
+    private void createSyncMarker(Path marker) {
         try {
-            Files.move(source, source.resolveSibling("options.txt.imported"), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            PersistentOptions.LOGGER.warn("Failed to rename local options file.", e);
-        }
-    }
-
-    private void checkForNewerConfigAndSync(Path currentFolder, Path currentFile) {
-        try (Stream<Path> stream = Files.list(PersistentOptions.customOptionsFolder)) {
-
-            Optional<Path> newestSibling = stream
-                    .filter(Files::isDirectory)
-                    .filter(path -> !path.equals(currentFolder))
-                    .map(path -> path.resolve("options.txt"))
-                    .filter(Files::exists)
-                    .max(Comparator.comparing(this::getLastModified));
-
-            if (newestSibling.isPresent()) {
-                Path source = newestSibling.get();
-                FileTime sourceTime = Files.getLastModifiedTime(source);
-                FileTime currentTime = Files.getLastModifiedTime(currentFile);
-
-                if (sourceTime.compareTo(currentTime) > 0) {
-                    PersistentOptions.LOGGER.info("Found newer config in " + source.getParent().getFileName() + ". Merging shared settings...");
-
-                    if (OptionMerger.mergeIntersection(source, currentFile)) {
-                        Files.setLastModifiedTime(currentFile, FileTime.fromMillis(System.currentTimeMillis()));
-                    }
-                }
+            if (!Files.exists(marker)) {
+                Files.createFile(marker);
             }
-        } catch (IOException e) {
-            PersistentOptions.LOGGER.warn("Smart Sync failed", e);
+            try { Files.setAttribute(marker, "dos:hidden", true); } catch (Exception ignored) {}
+        } catch (Exception e) {
+            PersistentOptions.LOGGER.warn("Failed to create sync marker", e);
         }
-    }
-
-    private void attemptUpgradeFromOlderVersion(Path currentVersionFolder, Path targetFile) {
-        try (Stream<Path> stream = Files.list(PersistentOptions.customOptionsFolder)) {
-            Optional<Path> bestMatch = stream
-                    .filter(Files::isDirectory)
-                    .filter(path -> !path.equals(currentVersionFolder))
-                    .filter(path -> Files.exists(path.resolve("options.txt")))
-                    .max(Comparator.comparing(Path::getFileName));
-
-            if (bestMatch.isPresent()) {
-                Path oldOptions = bestMatch.get().resolve("options.txt");
-                Files.copy(oldOptions, targetFile);
-                PersistentOptions.LOGGER.info("Upgraded settings from " + bestMatch.get().getFileName());
-            }
-        } catch (IOException e) {
-            PersistentOptions.LOGGER.warn("Failed to auto-upgrade settings.", e);
-        }
-    }
-
-    private FileTime getLastModified(Path p) {
-        try { return Files.getLastModifiedTime(p); }
-        catch (IOException e) { return FileTime.fromMillis(0); }
     }
 
     private boolean isRealUserOptions(Path path) {
-        if (!Files.exists(path)) return false;
         try {
-            if (Files.size(path) < 100) return false;
+            if (Files.size(path) < 10) return false;
             List<String> lines = Files.readAllLines(path);
-            if (lines.size() < 20) return false;
-
-            boolean hasFov = false;
-            boolean hasSensitivity = false;
-            int limit = Math.min(lines.size(), 50);
-            for (int i = 0; i < limit; i++) {
-                String line = lines.get(i);
-                if (line.startsWith("fov:")) hasFov = true;
-                if (line.startsWith("mouseSensitivity:")) hasSensitivity = true;
-            }
-            return hasFov && hasSensitivity;
+            return lines.size() >= 5;
         } catch (Exception e) {
             return false;
         }
