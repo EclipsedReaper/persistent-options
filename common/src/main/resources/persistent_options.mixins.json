@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.eclipse.persistent.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "OptionsLoadMixin"
+  ],
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
