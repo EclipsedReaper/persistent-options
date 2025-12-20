@@ -1,4 +1,4 @@
-name: Build Persistent Options
+name: Build Mod
 
 on:
   push:
