@@ -7,7 +7,7 @@ import com.eclipse.persistent.PersistentOptions;
 @Mod(PersistentOptions.MOD_ID)
 public final class PersistentOptionsNeoForge {
     public PersistentOptionsNeoForge() {
-        // Run our common setup.
         PersistentOptions.init();
+        ClientEventsNeoForge.init();
     }
 }

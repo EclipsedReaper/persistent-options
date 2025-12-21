@@ -33,8 +33,10 @@ jobs:
           mkdir -p staging
           cp fabric/build/libs/*-dev-shadow.jar staging-ignore/ || true
           cp neoforge/build/libs/*-dev-shadow.jar staging-ignore/ || true
+          cp forge/build/libs/*-dev-shadow.jar staging-ignore/ || true
           cp fabric/build/libs/*.jar staging/ 2>/dev/null
           cp neoforge/build/libs/*.jar staging/ 2>/dev/null
+          cp forge/build/libs/*.jar staging/ 2>/dev/null
           rm -f staging/*-sources.jar staging/*-dev-shadow.jar
           echo "Staged files:"
           ls -lh staging/

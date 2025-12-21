@@ -19,31 +19,29 @@ subprojects {
     apply plugin: 'maven-publish'
 
     base {
-        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
     repositories {
-        // Add repositories to retrieve artifacts from in here.
-        // You should only use this when depending on other mods because
-        // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-        // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-        // for more information about repositories.
     }
 
     loom {
         silentMojangMappingsLicense()
+
+        mixin {
+            useLegacyMixinAp = true
+            defaultRefmapName = "persistent_options-refmap.json"
+        }
     }
 
     dependencies {
-        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-        mappings loom.officialMojangMappings()
+        if (project.name != 'neoforge') {
+            minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+            mappings loom.officialMojangMappings()
+        }
     }
 
     java {
-        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-        // if it is present.
-        // If you remove this line, sources will not be generated.
         withSourcesJar()
 
         sourceCompatibility = JavaVersion.VERSION_21
@@ -54,7 +52,6 @@ subprojects {
         it.options.release = 17
     }
 
-    // Configure Maven publishing.
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -63,12 +60,68 @@ subprojects {
             }
         }
 
-        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
         repositories {
-            // Add repositories to publish to here.
-            // Notice: This block does NOT have the same function as the block in the top level.
-            // The repositories here will be used for publishing your artifact, not for
-            // retrieving dependencies.
+        }
+    }
+}
+
+tasks.register('deployMods', DefaultTask) {
+    dependsOn ':fabric:build'
+    dependsOn ':forge:build'
+    dependsOn ':neoforge:build'
+
+    doLast {
+        def userHome = System.getProperty("user.home")
+        def prismInstances = "${userHome}/AppData/Roaming/PrismLauncher/instances"
+
+        println "Detected User Home: ${userHome}"
+        println "Targeting Prism Instances at: ${prismInstances}"
+
+        def deployments = [
+                'fabric'  : [
+                        "1.20.1 Fabric",
+                        "1.20.4 Fabric",
+                        "1.21.11 Fabric"
+                ],
+                'forge'   : [
+                        "1.20.1 Forge",
+                        "1.20.4 Forge"
+                ],
+                'neoforge': [
+                        "1.20.4 NeoForge",
+                        "1.21.11 NeoForge"
+                ]
+        ]
+
+        deployments.each { moduleName, instanceNames ->
+            def projectObj = project(":$moduleName")
+            def libsDir = projectObj.layout.buildDirectory.dir("libs").get().asFile
+
+            def jarFile = libsDir.listFiles().find { file ->
+                def name = file.name
+                return name.endsWith(".jar") &&
+                        !name.contains("-dev") &&
+                        !name.contains("-sources") &&
+                        !name.contains("-javadoc")
+            }
+
+            if (jarFile != null) {
+                instanceNames.each { instanceName ->
+                    def destPath = file("${prismInstances}/${instanceName}/minecraft/mods")
+
+                    if (!destPath.exists()) {
+                        println "  [WARNING] Destination not found: ${destPath}"
+                    } else {
+                        copy {
+                            from jarFile
+                            into destPath
+                        }
+                        println "  -> Deployed to: ${instanceName}"
+                    }
+                }
+            } else {
+                println "  [ERROR] Could not find valid jar in ${moduleName}/build/libs/"
+            }
         }
     }
 }

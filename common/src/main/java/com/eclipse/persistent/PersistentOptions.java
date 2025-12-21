@@ -16,12 +16,12 @@ public final class PersistentOptions {
     public static final Path customOptionsFolder = Path.of(System.getProperty("user.home")).resolve(".persistentoptions");
 
     public enum SyncResult {
-        NONE(""), // No action was taken
+        NONE(""),
         IMPORTED_LOCAL("Imported local settings"),
         APPLIED_GLOBAL("Applied global settings"),
         INITIALIZED("Initialized global settings"),
-        AUTO_SYNCED("Auto-synced with global file"),
-        FAILED("Sync failed! Check logs.");
+        AUTO_SYNCED("Synced with global file"),
+        FAILED("Sync failed! Please report this error.");
 
         private final String message;
         SyncResult(String message) { this.message = message; }

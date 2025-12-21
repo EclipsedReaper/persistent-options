@@ -1,30 +1,37 @@
-package com.eclipse.persistent.neoforge;
+package com.eclipse.persistent.forge;
 
 import com.eclipse.persistent.PersistentOptions;
-import dev.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public class ClientEventsNeoForge {
+@Mod.EventBusSubscriber(modid = PersistentOptions.MOD_ID, value = Dist.CLIENT)
+public class ClientEventsForge {
 
     private static boolean hasShownToast = false;
 
-    public static void init() {
-        ClientTickEvent.CLIENT_POST.register(mc -> {
-            if (!hasShownToast && mc.screen instanceof TitleScreen) {
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            Minecraft mc = Minecraft.getInstance();
+            if (!hasShownToast && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
+
                 PersistentOptions.SyncResult result = PersistentOptions.lastSyncResult;
                 if (result != PersistentOptions.SyncResult.NONE) {
                     showUniversalToast(mc, result.getMessage());
                 }
+
                 hasShownToast = true;
             }
-        });
+        }
     }
 
     private static void showUniversalToast(Minecraft mc, String message) {
@@ -44,6 +51,7 @@ public class ClientEventsNeoForge {
                     }
                 }
             }
+
             if (addMethod == null) return;
 
             Object manager = null;
@@ -81,7 +89,7 @@ public class ClientEventsNeoForge {
                     Component.literal(message));
 
         } catch (Exception e) {
-            PersistentOptions.LOGGER.warn("Failed to show toast", e);
+            PersistentOptions.LOGGER.error("Failed to show toast", e);
         }
     }
 }

@@ -1,5 +1,5 @@
-modLoader = "javafml"
-loaderVersion = "[1,)"
+modLoader="javafml"
+loaderVersion="[47,)"
 license = "MIT"
 issueTrackerURL = "https://github.com/EclipsedReaper/persistent-options/issues"
 
@@ -11,26 +11,23 @@ author = "EclipsedReaper"
 description = "Keeps your options in a global folder so you don't have to change them every time"
 logoFile = "assets/persistent_options/icon.png"
 
-[[mixins]]
-config = "persistent_options.mixins.json"
+[[dependencies.persistent_options]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
 
 [[dependencies.persistent_options]]
-modId = "minecraft"
-type = "required"
-versionRange = "[1.20.4,)"
-ordering = "NONE"
-side = "BOTH"
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.4]"
+ordering="NONE"
+side="BOTH"
 
 [[dependencies.persistent_options]]
-modId = "neoforge"
-type = "required"
-versionRange = "[1,)"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.persistent_options]]
-modId = "architectury"
-type = "required"
-versionRange = "[11.1.17,)"
-ordering = "AFTER"
-side = "BOTH"
+modId="architectury"
+mandatory=true
+versionRange="[9.2.14,)"
+ordering="NONE"
+side="BOTH"

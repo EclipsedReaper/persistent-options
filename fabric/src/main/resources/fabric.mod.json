@@ -4,12 +4,12 @@
   "version": "${version}",
   "name": "Persistent Options",
   "description": "Keeps your options in a global folder so you don't have to change them every time",
-  "author": "EclipsedReaper",
+  "authors": ["EclipsedReaper"],
   "contact": {
     "homepage": "https://modrinth.com/mod/persistent-options",
     "sources": "https://github.com/EclipsedReaper/persistent-options"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/persistent_options/icon.png",
   "environment": "*",
   "entrypoints": {
@@ -25,9 +25,9 @@
   ],
   "depends": {
     "fabricloader": ">=0.15.11",
-    "minecraft": ">=1.20.4",
+    "minecraft": ">=1.20.1",
     "java": ">=17",
-    "architectury": "*"
+    "architectury": ">=9.2.14"
   },
   "suggests": {
     "modmenu": "*"

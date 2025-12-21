@@ -1,6 +1,8 @@
 {
   "required": true,
+  "minVersion": "0.8",
   "package": "com.eclipse.persistent.mixin",
+  "refmap": "persistent_options-refmap.json",
   "compatibilityLevel": "JAVA_17",
   "client": [
     "OptionsLoadMixin",

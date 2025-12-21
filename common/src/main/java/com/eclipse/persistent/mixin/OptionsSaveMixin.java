@@ -23,7 +23,6 @@ public class OptionsSaveMixin {
         PersistentOptions.scheduleSync(() -> {
             if (Files.exists(localFile)) {
                 OptionMerger.smartMerge(localFile, globalFile);
-                PersistentOptions.LOGGER.info("Synced Local Options -> Global (Background)");
             }
         });
     }
