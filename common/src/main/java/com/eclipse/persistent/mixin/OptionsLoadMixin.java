@@ -30,22 +30,22 @@ public class OptionsLoadMixin {
 
             if (globalExists && localExists) {
                 if (Files.exists(syncMarker)) {
-                    OptionMerger.smartMerge(globalFile, localFile);
+                    OptionMerger.merge(globalFile, localFile);
                     PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.AUTO_SYNCED;
                 } else {
                     if (isRealUserOptions(localFile)) {
                         System.setProperty("java.awt.headless", "false");
                         boolean keepLocal = SyncDialog.showConflictDialog();
                         if (keepLocal) {
-                            OptionMerger.smartMerge(localFile, globalFile);
+                            OptionMerger.merge(localFile, globalFile);
                             PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.IMPORTED_LOCAL;
                         } else {
-                            OptionMerger.smartMerge(globalFile, localFile);
+                            OptionMerger.merge(globalFile, localFile);
                             PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.APPLIED_GLOBAL;
                         }
                         createSyncMarker(syncMarker);
                     } else {
-                        OptionMerger.smartMerge(globalFile, localFile);
+                        OptionMerger.merge(globalFile, localFile);
                         PersistentOptions.lastSyncResult = PersistentOptions.SyncResult.APPLIED_GLOBAL;
                         createSyncMarker(syncMarker);
                     }

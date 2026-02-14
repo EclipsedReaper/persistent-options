@@ -27,7 +27,7 @@ public class OptionMerger {
         return map;
     }
 
-    public static void smartMerge(Path source, Path target) {
+    public static void merge(Path source, Path target) {
         Path backup = null;
         try {
             if (Files.exists(target)) {
@@ -37,6 +37,10 @@ public class OptionMerger {
 
             Map<String, String> sourceMap = loadOptions(source);
             Map<String, String> targetMap = loadOptions(target);
+            if (!sourceMap.containsKey("fullscreenResolution")) {
+                targetMap.remove("fullscreenResolution");
+            }
+
             targetMap.putAll(sourceMap);
             Files.write(target, targetMap.values(), StandardCharsets.UTF_8);
 
