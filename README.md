@@ -1,7 +1,6 @@
 # Persistent Options
 
-A client-side Minecraft mod that remembers and restores your settings
-so you don't have to reconfigure them every time you play.
+A client-side mod that remembers and restores your settings so you don't have to reconfigure them every time you install a new modpack.
 
 ## Features
 - Automatically saves settings when you leave the options menu
