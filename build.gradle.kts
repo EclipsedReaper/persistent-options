@@ -49,6 +49,10 @@ dependencies {
         "forge"("net.minecraftforge:forge:${minecraft}-${mod.dep("forge_loader")}")
 //        mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
 
+        configurations.configureEach {
+            exclude(group = "net.fabricmc", module = "fabric-log4j-util")
+        }
+
         val mixinExtras = "io.github.llamalad7:mixinextras-common:${mod.dep("mixin_extras")}"
         compileOnly(mixinExtras)
         annotationProcessor(mixinExtras)

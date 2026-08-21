@@ -9,9 +9,11 @@ A client-side mod that remembers and restores your settings so you don't have to
 - Fabric and NeoForge support via Architectury
 
 ## Requirements
-- Minecraft 1.20.4-1.21.11
-- Fabric Loader or NeoForge
-- Architectury API
+*   One of the following Minecraft + loader combinations:
+    *   **Fabric** 1.20.1–1.21.11
+    *   **Forge** 1.20.1–1.20.4
+    *   **NeoForge** 1.20.4–1.21.11
+*   Architectury API
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the GNU General Public License Version 3. See the LICENSE file for details.

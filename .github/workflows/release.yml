@@ -1,4 +1,4 @@
-name: Create Release
+name: Release
 
 on:
   workflow_dispatch:
@@ -10,40 +10,110 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+      - run: chmod +x ./gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew buildAndCollect
+      - run: ./gradlew buildAndCollect
 
-      - name: Prepare Release Artifacts
-        run: |
-          mkdir -p staging
-          cp fabric/build/libs/*-dev-shadow.jar staging-ignore/ || true
-          cp neoforge/build/libs/*-dev-shadow.jar staging-ignore/ || true
-          cp forge/build/libs/*-dev-shadow.jar staging-ignore/ || true
-          cp fabric/build/libs/*.jar staging/ 2>/dev/null
-          cp neoforge/build/libs/*.jar staging/ 2>/dev/null
-          cp forge/build/libs/*.jar staging/ 2>/dev/null
-          rm -f staging/*-sources.jar staging/*-dev-shadow.jar
-          echo "Staged files:"
-          ls -lh staging/
+      - run: |
+          awk '/^## \[/ { if (count++) exit } count { print }' CHANGELOG.md > latest_changelog.md
 
-      - name: Create Release and Upload Artifacts
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
-          files: staging/*
+          body_path: latest_changelog.md
+          files: build/libs/*.jar
+
+      - run: |
+          mkdir -p staging
+          cp build/libs/*.jar staging/ 2>/dev/null
+          rm -f staging/*-sources.jar staging/*-dev-shadow.jar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-jars
+          path: |
+            staging/
+            latest_changelog.md
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - loader: fabric
+            mc-version: "1.20.1"
+          - loader: fabric
+            mc-version: "1.20.4"
+          - loader: fabric
+            mc-version: "1.21.1"
+          - loader: fabric
+            mc-version: "1.21.3"
+          - loader: fabric
+            mc-version: "1.21.4"
+          - loader: fabric
+            mc-version: "1.21.5"
+          - loader: fabric
+            mc-version: "1.21.6"
+          - loader: fabric
+            mc-version: "1.21.7"
+          - loader: fabric
+            mc-version: "1.21.8"
+          - loader: fabric
+            mc-version: "1.21.9"
+          - loader: fabric
+            mc-version: "1.21.10"
+          - loader: fabric
+            mc-version: "1.21.11"
+          - loader: neoforge
+            mc-version: "1.20.4"
+          - loader: neoforge
+            mc-version: "1.21.1"
+          - loader: neoforge
+            mc-version: "1.21.3"
+          - loader: neoforge
+            mc-version: "1.21.4"
+          - loader: neoforge
+            mc-version: "1.21.5"
+          - loader: neoforge
+            mc-version: "1.21.6"
+          - loader: neoforge
+            mc-version: "1.21.7"
+          - loader: neoforge
+            mc-version: "1.21.8"
+          - loader: neoforge
+            mc-version: "1.21.9"
+          - loader: neoforge
+            mc-version: "1.21.10"
+          - loader: neoforge
+            mc-version: "1.21.11"
+          - loader: forge
+            mc-version: "1.20.1"
+          - loader: forge
+            mc-version: "1.20.4"
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-jars
+
+      - uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: "OAxJpW9U"
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: "1409359"
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: staging/*${{ matrix.loader }}*${{ matrix.mc-version }}.jar
+          loaders: ${{ matrix.loader }}
+          game-versions: ${{ matrix.mc-version }}
+          changelog-file: latest_changelog.md
