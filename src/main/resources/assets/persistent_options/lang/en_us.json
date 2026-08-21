@@ -1,0 +1,10 @@
+{
+  "persistent_options.sync.updated_global": "Updated global settings",
+  "persistent_options.sync.applied_global": "Applied global settings",
+  "persistent_options.sync.initialized": "Initialized global settings",
+  "persistent_options.sync.auto_synced": "Synced with global file",
+  "persistent_options.sync.failed": "Sync failed! Please report this error.",
+
+  "persistent_options.settings.confirm": "Confirm",
+  "persistent_options.settings.cancel": "Cancel"
+}

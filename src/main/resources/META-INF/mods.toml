@@ -1,0 +1,19 @@
+modLoader = "javafml"
+loaderVersion = "*"
+license = "GPL-3.0-or-later"
+issueTrackerURL="https://EclipsedReaper/PersistentOptions/issues"
+
+[[mods]]
+modId = "persistent_options"
+version = "${version}"
+displayName = "${name}"
+authors = "EclipsedReaper"
+description = ""
+logoFile = "assets/persistent_options/icon.png"
+logoBlur = false
+
+[[mixins]]
+config = "persistent_options-common.mixins.json"
+
+[[mixins]]
+config = "persistent_options-neoforge.mixins.json"

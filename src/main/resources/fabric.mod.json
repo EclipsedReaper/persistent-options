@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+  "name": "${name}",
+  "description": "",
+  "authors": [
+    "EclipsedReaper"
+  ],
+  "contact": {
+  },
+  "license": "GPL-3.0-or-later",
+  "icon": "assets/${id}/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.eclipse.persistent.platforms.fabric.PersistentOptionsFabric"
+    ],
+    "client": [
+      "com.eclipse.persistent.platforms.fabric.PersistentOptionsFabricClient"
+    ],
+    "modmenu": [
+      "com.eclipse.persistent.platforms.fabric.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "persistent_options-common.mixins.json",
+    "persistent_options-fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "${minecraft}"
+  }
+}

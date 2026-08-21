@@ -1,9 +1,9 @@
-* text=auto
+#
+# https://help.github.com/articles/dealing-with-line-endings/
+#
+# Linux start script should use lf
+/gradlew        text eol=lf
 
-*.java   text eol=lf
-*.gradle text eol=lf
-*.json   text eol=lf
-*.md     text eol=lf
-*.yml    text eol=lf
-*.toml   text eol=lf
-*.bat    text eol=crlf
+# These are Windows script files and should use crlf
+*.bat           text eol=crlf
+
