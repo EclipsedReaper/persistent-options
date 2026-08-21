@@ -12,14 +12,21 @@ import static com.eclipse.persistent.PersistentOptions.LOGGER;
 
 public class UniversalToast {
     public static void showToast(Component message) {
-        //? if <1.21.1 {
+        //? if <1.20.4 {
         SystemToast.add(
                 Minecraft.getInstance().getToasts(),
                 SystemToast.SystemToastIds.PERIODIC_NOTIFICATION,
                 Component.literal("Persistent Options"),
                 message
         );
-        //?} else if =1.21.1 {
+        //?} else if =1.20.4 {
+        /*SystemToast.add(
+                Minecraft.getInstance().getToasts(),
+                SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                Component.literal("Persistent Options"),
+                message
+        );
+        *///?} else if =1.21.1 {
         /*SystemToast.add(
                 Minecraft.getInstance().getToasts(),
                 SystemToast.SystemToastId.PERIODIC_NOTIFICATION,

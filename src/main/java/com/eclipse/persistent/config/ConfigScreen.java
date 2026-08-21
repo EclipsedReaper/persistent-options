@@ -62,7 +62,7 @@ public class ConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        //? if <1.21.1 {
+        //? if <1.20.4 {
             this.renderBackground(guiGraphics);
         //?}
         super.render(guiGraphics, mouseX, mouseY, partialTick);
