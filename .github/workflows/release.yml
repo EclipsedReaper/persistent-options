@@ -29,8 +29,8 @@ jobs:
 
       - run: |
           mkdir -p staging
-          cp build/libs/*.jar staging/ 2>/dev/null
-          rm -f staging/*-sources.jar staging/*-dev-shadow.jar
+          find build/libs -type f -name "*.jar" -exec cp {} staging/ \;
+          rm -f staging/*-sources.jar
 
       - uses: softprops/action-gh-release@v2
         with:
