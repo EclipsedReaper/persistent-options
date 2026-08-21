@@ -27,15 +27,15 @@ jobs:
       - run: |
           awk '/^## \[/ { if (count++) exit } count { print }' CHANGELOG.md > latest_changelog.md
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          body_path: latest_changelog.md
-          files: build/libs/*.jar
-
       - run: |
           mkdir -p staging
           cp build/libs/*.jar staging/ 2>/dev/null
           rm -f staging/*-sources.jar staging/*-dev-shadow.jar
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: latest_changelog.md
+          files: staging/*.jar
 
       - uses: actions/upload-artifact@v4
         with:
