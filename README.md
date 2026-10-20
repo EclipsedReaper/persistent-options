@@ -2,6 +2,8 @@
 
 A client-side mod that remembers and restores your settings so you don't have to reconfigure them every time you install a new modpack.
 
+[![ModDex rating](https://moddex.gg/badges/projects/persistent-options/rating.svg?style=banner)](https://moddex.gg/mod/persistent-options)
+
 ## Features
 - Automatically saves settings when you leave the options menu
 - Restores your preferred settings on game startup

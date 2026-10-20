@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
 
       - run: chmod +x ./gradlew
 
@@ -37,8 +37,10 @@ jobs:
           find build/libs -type f -name "*.jar" -exec cp {} staging/ \;
           rm -f staging/*-sources.jar
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           body_path: latest_changelog.md
           files: staging/*.jar
 
@@ -80,6 +82,13 @@ jobs:
             mc-version: "1.21.10"
           - loader: fabric
             mc-version: "1.21.11"
+          - loader: fabric
+            mc-version: "26.1.2"
+          - loader: fabric
+            mc-version: "26.2"
+          - loader: fabric
+            mc-version: "26.3"
+
           - loader: neoforge
             mc-version: "1.20.4"
           - loader: neoforge
@@ -102,6 +111,13 @@ jobs:
             mc-version: "1.21.10"
           - loader: neoforge
             mc-version: "1.21.11"
+          - loader: neoforge
+            mc-version: "26.1.2"
+          - loader: neoforge
+            mc-version: "26.2"
+          - loader: neoforge
+            mc-version: "26.3"
+
           - loader: forge
             mc-version: "1.20.1"
           - loader: forge

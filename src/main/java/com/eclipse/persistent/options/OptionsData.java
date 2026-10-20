@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-class OptionsData {
+public class OptionsData {
     public static class OptionsMenuData {
         private static final Gson GSON = new Gson();
         public Map<String, String> settings;
@@ -84,10 +84,7 @@ class OptionsData {
                     Set<String> packNames = resourcePacks.stream()
                             .map(ResourcePackUtils.ResourcePackInfo::name)
                             .collect(Collectors.toSet());
-                    System.out.println(packNames);
-
                     for (ResourcePackUtils.ResourcePackInfo pack : instancePacks) {
-                        System.out.println(pack.name());
                         if (packNames.contains(pack.name())) {
                             if (pack.fullName().equals("high_contrast")) {
                                 loadedPackNames.add(pack.fullName());
@@ -96,7 +93,6 @@ class OptionsData {
                             }
                         }
                     }
-                    System.out.println("resourcePacks:" + GSON.toJson(loadedPackNames));
                     lines.add("resourcePacks:" + GSON.toJson(loadedPackNames));
                 }
                 Files.write(optionsPath, lines, StandardCharsets.UTF_8);
@@ -108,27 +104,11 @@ class OptionsData {
         public void saveToGlobal() {
             if (Files.exists(PersistentOptions.globalOptions)) {
                 try (BufferedReader reader = Files.newBufferedReader(PersistentOptions.globalOptions, StandardCharsets.UTF_8)) {
-                    OptionsMenuData existingData = GSON.fromJson(reader, OptionsMenuData.class);
-                    if (existingData != null) {
-                        if (existingData.settings != null) {
-                            existingData.settings.putAll(this.settings);
-                            this.settings = existingData.settings;
-                        }
-                        if (existingData.resourcePacks != null && PersistentOptions.configManager.getSyncResourcePacks()) {
-                            List<ResourcePackUtils.ResourcePackInfo> instancePacks = ResourcePackUtils.getResourcePacks();
-                            Set<String> packNames = resourcePacks.stream()
-                                    .map(ResourcePackUtils.ResourcePackInfo::name)
-                                    .collect(Collectors.toSet());
-                            Set<String> storedPackNames = existingData.resourcePacks.stream()
-                                    .map(ResourcePackUtils.ResourcePackInfo::name)
-                                    .collect(Collectors.toSet());
-                            for (ResourcePackUtils.ResourcePackInfo info : instancePacks) {
-                                if (packNames.contains(info.name()) && !storedPackNames.contains(info.name())) {
-                                    existingData.resourcePacks.removeIf(existingPack -> packNames.contains(existingPack.name()));
-                                }
-                            }
-                            existingData.resourcePacks.addAll(this.resourcePacks);
-                            this.resourcePacks = existingData.resourcePacks;
+                    OptionsMenuData globalData = GSON.fromJson(reader, OptionsMenuData.class);
+                    if (globalData != null) {
+                        if (globalData.settings != null) {
+                            globalData.settings.putAll(this.settings);
+                            this.settings = globalData.settings;
                         }
                     }
                 } catch (IOException e) {

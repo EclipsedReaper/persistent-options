@@ -2,10 +2,10 @@ package com.eclipse.persistent.options;
 
 import com.eclipse.persistent.PersistentOptions;
 
+import com.eclipse.persistent.util.ResourcePackUtils;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 
@@ -18,24 +18,6 @@ public class OptionsManager {
         OptionsData data = new OptionsData();
         data.loadFromGlobal();
         return data;
-
-        /*
-        Map<String, String> map = new LinkedHashMap<>();
-        if (!Files.exists(path)) return map;
-
-        try {
-            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-            for (String line : lines) {
-                String[] parts = line.split(":", 2);
-                if (parts.length == 2) {
-                    map.put(parts[0], line);
-                }
-            }
-        } catch (IOException e) {
-            PersistentOptions.LOGGER.error("Failed to load settings: ", e);
-        }
-        return map;
-        */
     }
 
     public static OptionsData loadLocalOptions(Path optionsPath, Path modConfigPath) {
@@ -49,7 +31,7 @@ public class OptionsManager {
     public static void mergeLocalOverGlobal(Path localOptions) {
         Path backup = null;
         try {
-            if (Files.exists(localOptions)) {
+            if (Files.exists(PersistentOptions.globalOptions.toAbsolutePath())) {
                 backup = PersistentOptions.globalOptions.resolveSibling(PersistentOptions.globalOptions.getFileName() + ".bak");
                 Files.copy(PersistentOptions.globalOptions, backup, StandardCopyOption.REPLACE_EXISTING);
             }
@@ -60,7 +42,9 @@ public class OptionsManager {
                 globalData.getOptionsMenuData().settings.remove("fullscreenResolution");
             }
             globalData.getOptionsMenuData().settings.putAll(localData.getOptionsMenuData().settings);
-            globalData.getOptionsMenuData().resourcePacks.addAll(localData.getOptionsMenuData().resourcePacks);
+            if (PersistentOptions.configManager.getSyncResourcePacks()) {
+                ResourcePackUtils.savePacksToGlobal(localData.getOptionsMenuData(), globalData.getOptionsMenuData());
+            }
 
             globalData.getOptionsMenuData().saveToGlobal();
 
@@ -75,7 +59,7 @@ public class OptionsManager {
     public static void mergeGlobalOverLocal(Path localOptions) {
         Path backup = null;
         try {
-            if (Files.exists(localOptions)) {
+            if (Files.exists(PersistentOptions.globalOptions.toAbsolutePath())) {
                 backup = PersistentOptions.globalOptions.resolveSibling(PersistentOptions.globalOptions.getFileName() + ".bak");
                 Files.copy(PersistentOptions.globalOptions, backup, StandardCopyOption.REPLACE_EXISTING);
             }
@@ -86,7 +70,9 @@ public class OptionsManager {
                 localData.getOptionsMenuData().settings.remove("fullscreenResolution");
             }
             localData.getOptionsMenuData().settings.putAll(globalData.getOptionsMenuData().settings);
-            localData.getOptionsMenuData().resourcePacks.addAll(globalData.getOptionsMenuData().resourcePacks);
+            if (PersistentOptions.configManager.getSyncResourcePacks()) {
+                ResourcePackUtils.savePacksToLocal(globalData.getOptionsMenuData(), localData.getOptionsMenuData());
+            }
 
             localData.getOptionsMenuData().saveToLocal(localOptions);
 

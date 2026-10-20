@@ -42,7 +42,12 @@ public class PersistentOptions {
 	}
 	public static SyncResult lastSyncResult = SyncResult.NONE;
 
-	private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor();
+	private static final ScheduledExecutorService SCHEDULER =
+			Executors.newSingleThreadScheduledExecutor(r -> {
+				Thread thread = new Thread(r, "PersistentOptions-Sync");
+				thread.setDaemon(true);
+				return thread;
+			});
 	private static final AtomicReference<Runnable> pendingTask = new AtomicReference<>();
 	private static final AtomicReference<ScheduledFuture<?>> pendingFuture = new AtomicReference<>();
 

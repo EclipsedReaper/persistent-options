@@ -33,9 +33,16 @@ public class UniversalToast {
                 Component.literal("Persistent Options"),
                 message
         );
-        *///?} else if >1.21.2 {
+        *///?} else if >1.21.2 && <26.2 {
         /*SystemToast.add(
                 Minecraft.getInstance().getToastManager(),
+                SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                Component.literal("Persistent Options"),
+                message
+        );
+        *///?} else if >=26.2 {
+        /*SystemToast.add(
+                Minecraft.getInstance().gui.toastManager(),
                 SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
                 Component.literal("Persistent Options"),
                 message

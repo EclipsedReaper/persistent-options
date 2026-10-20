@@ -8,7 +8,7 @@ modId = "persistent_options"
 version = "${version}"
 displayName = "${name}"
 authors = "EclipsedReaper"
-description = ""
+description = "Persistent Options is a client-side mod that remembers and restores your settings between Minecraft instances."
 logoFile = "assets/persistent_options/icon.png"
 logoBlur = false
 

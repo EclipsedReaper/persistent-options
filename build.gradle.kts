@@ -23,31 +23,22 @@ architectury.common(sc.current.project.substringAfter('-'))
 repositories {
     maven("https://maven.neoforged.net/releases/")
     maven("https://maven.architectury.dev/")
-
-    //modmenu
     maven("https://maven.terraformersmc.com/")
-    //placeholder api (modmenu depencency)
     maven("https://maven.nucleoid.xyz/")
 }
+
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft")
     mappings(loom.officialMojangMappings())
 
     if (loader == "fabric") {
         modImplementation("net.fabricmc:fabric-loader:${mod.dep("fabric_loader")}")
-//        mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
         modImplementation("com.terraformersmc:modmenu:${mod.dep("modmenu_version")}")
-
-        //some features (like automatic resource loading from non vanilla namespaces) work only with fabric API installed
-        //for example translations from assets/modid/lang/en_us.json won't be working, same stuff with textures
-        //but we keep runtime only to not accidentally depend on fabric's api, because it doesn't exist in neo/forge
         modRuntimeOnly("net.fabricmc.fabric-api:fabric-api:${mod.dep("fabric_version")}")
-
         modImplementation("dev.architectury:architectury-fabric:${mod.dep("architectury_version")}")
     }
     if (loader == "forge") {
         "forge"("net.minecraftforge:forge:${minecraft}-${mod.dep("forge_loader")}")
-//        mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
 
         configurations.configureEach {
             exclude(group = "net.fabricmc", module = "fabric-log4j-util")
@@ -62,22 +53,13 @@ dependencies {
     }
     if (loader == "neoforge") {
         "neoForge"("net.neoforged:neoforge:${mod.dep("neoforge_loader")}")
-//        mappings(loom.layered {
-//            mappings("net.fabricmc:yarn:$minecraft+build.${mod.dep("yarn_build")}:v2")
-//            mod.dep("neoforge_patch").takeUnless { it.startsWith('[') }?.let {
-//                mappings("dev.architectury:yarn-mappings-patch-neoforge:$it")
-//            }
-//        })
-
         modImplementation("dev.architectury:architectury-neoforge:${mod.dep("architectury_version")}")
     }
 }
 
 loom {
-    accessWidenerPath = rootProject.file("src/main/resources/persistent_options.accesswidener")
-
     decompilers {
-        get("vineflower").apply { // Adds names to lambdas - useful for mixins
+        get("vineflower").apply {
             options.put("mark-corresponding-synthetics", "1")
         }
     }
@@ -89,7 +71,6 @@ loom {
     }
 }
 
-
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -99,9 +80,8 @@ publishMods {
     val modrinthToken = localProperties.getProperty("publish.modrinthToken", "")
     val curseforgeToken = localProperties.getProperty("publish.curseforgeToken", "")
 
-
     file = project.tasks.remapJar.get().archiveFile
-    dryRun = modrinthToken == null || curseforgeToken == null
+    dryRun = modrinthToken.isBlank() || curseforgeToken.isBlank()
 
     displayName = "${mod.name} ${loader.replaceFirstChar { it.uppercase() }} ${property("mod.mc_title")}-${mod.version}"
     version = mod.version
@@ -122,7 +102,7 @@ publishMods {
 
     curseforge {
         projectId = property("publish.curseforge").toString()
-        accessToken = curseforgeToken.toString()
+        accessToken = curseforgeToken
         targets.forEach(minecraftVersions::add)
         if (loader == "fabric") {
             requires("fabric-api")
@@ -160,7 +140,7 @@ tasks.shadowJar {
 }
 
 tasks.remapJar {
-    injectAccessWidener = true
+    injectAccessWidener = false
     input = tasks.shadowJar.get().archiveFile
     archiveClassifier = null
     dependsOn(tasks.shadowJar)
@@ -180,12 +160,12 @@ val buildAndCollect = tasks.register<Copy>("buildAndCollect") {
 
 if (stonecutter.current.isActive) {
     rootProject.tasks.register("buildActive") {
-        group = "project"
+        group = "versioned"
         dependsOn(buildAndCollect)
     }
 
     rootProject.tasks.register("runActive") {
-        group = "project"
+        group = "versioned"
         dependsOn(tasks.named("runClient"))
     }
 }

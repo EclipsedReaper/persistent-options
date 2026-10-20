@@ -1,7 +1,11 @@
 package com.eclipse.persistent.config;
 
 import com.eclipse.persistent.PersistentOptions;
+//? if >=26.1 {
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
+*///? } else {
 import net.minecraft.client.gui.GuiGraphics;
+//? }
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -56,16 +60,28 @@ public class ConfigScreen extends Screen {
     @Override
     public void onClose() {
         if (this.minecraft != null) {
+            //? if >=26.1 {
+            /*this.minecraft.setScreenAndShow(this.parent);
+            *///?} else {
             this.minecraft.setScreen(this.parent);
+            //?}
         }
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public void extractRenderState(GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, partialTick);
+        guiGraphicsExtractor.centeredText(this.font, this.title, this.width / 2, 20, 0xFFFFFFFF);
+    }
+    *///? } else {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         //? if <1.20.4 {
             this.renderBackground(guiGraphics);
         //?}
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);
+        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFFFF);
     }
+    //? }
 }
